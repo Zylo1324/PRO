@@ -1,0 +1,120 @@
+Quiero modificar esta landing page sin romper el diseño actual (dark/cinematic, tipografías, botones, navbar). Cambios exactos:
+
+Navbar / CTA principal
+
+Reemplaza el botón del header que dice “Let’s Talk” por un botón que diga: “Registrar e Iniciar”.
+
+Mantén el mismo estilo visual del botón (colores, bordes, hover, tamaño, ubicación), solo cambia el texto.
+
+Este botón ya NO debe llevar a la sección Contact.
+
+Reemplazar la sección Contact por Auth (modal)
+
+El contenido actual de “Contact / Let’s start a conversation” con formulario (Name, Email, Message, Send Message) ya no lo quiero.
+
+En su lugar, al hacer clic en “Registrar e Iniciar”, abre un MODAL (overlay) centrado con fondo oscuro/blur, siguiendo el estilo de la web.
+
+El modal debe permitir:
+a) Iniciar sesión con Google (popup)
+b) Iniciar sesión con Email + Password
+c) Recuperar contraseña (enviar email de reseteo)
+d) Manejar el flujo “resetPassword” cuando la URL tenga query params: mode=resetPassword&oobCode=...
+e) Si el usuario es nuevo o no tiene perfil completo, mostrar un paso “Completar perfil” y guardar en Firestore
+f) Si el usuario ya tiene perfil completo, mostrar estado “logueado” y que el botón diga “Hola, {nombre}” y ofrezca un mini-menú con “Cerrar sesión” (y opcional “Configuración” placeholder)
+
+Firebase (usar estas credenciales)
+
+Integra Firebase Auth + Firestore con esta config exacta:
+apiKey: "AIzaSyAalYro3vkWGXH9AF2qWY6pDvk4YBkO2T0"
+authDomain: "puchy-e4486.firebaseapp.com"
+projectId: "puchy-e4486"
+appId: "1:827633847742:web:9a3dccc36c64d0fc507def"
+
+Requisitos de Auth:
+
+setPersistence(browserLocalPersistence)
+
+GoogleAuthProvider + signInWithPopup
+
+Email: signInWithEmailAndPassword / createUserWithEmailAndPassword
+
+Reset: sendPasswordResetEmail / verifyPasswordResetCode / confirmPasswordReset
+
+IMPORTANTE: cuando el login por email falle con “invalid-credential” o “invalid-login-credentials”, usa fetchSignInMethodsForEmail(email) para decidir:
+
+si hay métodos => el correo existe, entonces el error es password incorrecta
+
+si no hay métodos => el correo no existe, entonces ir a registro/completar perfil
+
+Maneja errores comunes: wrong-password, user-not-found, invalid-email, too-many-requests
+
+Firestore (estructura)
+
+Colección: "users"
+
+Documento: user.uid
+
+Campos a guardar/merge:
+uid, email, fullName, whatsapp (guardar con prefijo +51), address, reference, profileComplete=true, updatedAt=serverTimestamp()
+
+Lógica:
+
+Si el doc existe y profileComplete == true: considera al usuario “listo”, cierra modal y muestra “Hola, {primerNombre}”
+
+Si no existe o no está completo: mostrar formulario “Completar perfil” (fullName, whatsapp 9 dígitos, address, reference)
+
+Validación: fullName >= 3 chars, whatsapp exactamente 9 dígitos numéricos
+
+UI / Estilo (NO copies mi diseño anterior, solo funcionalidad)
+
+Quiero que el modal y los inputs se vean coherentes con la web actual (dark theme, bordes suaves, tipografía consistente).
+
+El modal debe tener:
+
+Tabs o vistas internas: "login", "recovery_sent", "new_password", "password_updated", "profile"
+
+Botón X para cerrar
+
+Botón volver en profile/new_password
+
+Botones:
+
+Primario para ingresar/guardar
+
+Botón Google arriba
+
+Link “¿Olvidaste la contraseña?”
+
+Importante: No uses el viejo layout blanco con borde negro tipo cartoon; adapta a este sitio (negro/gris, blur, acentos morados si ya existen).
+
+Implementación técnica (cómo integrarlo)
+
+Crea un componente React único, por ejemplo: AuthModalOrButton.tsx (o dentro del mismo layout si ya existe).
+
+Inserta el botón en el navbar reemplazando “Let’s Talk”.
+
+El botón debe abrir/cerrar el modal (estado local).
+
+Cuando el usuario esté logueado y con perfil completo:
+
+el texto del botón cambia a “Hola, {nombre}”
+
+al click en vez de abrir modal, despliega un pequeño dropdown con:
+
+“Cerrar sesión” (signOut)
+
+(opcional) “Configuración” placeholder
+
+Elimina o desactiva la ruta/scroll a “Contact” desde el navbar.
+
+Si existe backend/DB anterior para inquiries, déjalo sin romper pero ya no lo uses en UI.
+
+Entregables
+
+Quiero que edites el código directamente en el proyecto actual.
+
+Asegúrate que compile sin errores y que el login funcione.
+
+No inventes endpoints nuevos. Solo Firebase.
+
+Haz estos cambios ahora.
